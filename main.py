@@ -52,7 +52,7 @@ def processing_thread():
     """
         Process the detection algorithm
         
-        Update:
+        Update:j
             game_plot, sgf_text
         Send error to message if there is one
         """
