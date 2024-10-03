@@ -7,8 +7,10 @@ from GoVisual import *
 from flask import Flask, render_template, Response, request
 import cv2
 import base64
+import recup_os
 
 cam_index = 0
+os=recup_os.get_os()
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = 'your_secret_key'  
@@ -161,8 +163,12 @@ def end_camera():
 def open_camera():
     """open the camera """
     global camera
-    camera = cv2.VideoCapture(cam_index, cv2.CAP_DSHOW)
-
+    if os == "Windows" :
+        camera = cv2.VideoCapture(cam_index, cv2.CAP_DSHOW)
+    elif os == "Linux" :
+        camera = cv2.VideoCapture(cam_index, cv2.V4L2)
+    else : 
+        camera = cv2.VideoCapture(cam_index)
 
 @app.route('/cam', methods=['POST', 'GET'])
 def getval():
