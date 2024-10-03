@@ -7,6 +7,7 @@ from GoVisual import *
 from flask import Flask, render_template, Response, request
 import cv2
 import base64
+import recup_os
 
 import recup_os
 
@@ -14,6 +15,7 @@ import recup_os
 os = recup_os.get_os()
 
 cam_index = 0
+os=recup_os.get_os()
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = 'your_secret_key'  
