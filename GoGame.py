@@ -119,7 +119,10 @@ class GoGame:
             return self.go_visual.current_position(), self.get_sgf()
     
     def transparent_mode_moves(self):
-        return np.transpose(self.board_detect.get_state(), (1, 0, 2))
+        #MODIFIER CETTE FONCTION
+        x=self.board_detect.get_state()
+        print(x[0])
+        return np.transpose(x, (1, 0, 2))
         
 
     def play_move(self, x, y, stone_color):
