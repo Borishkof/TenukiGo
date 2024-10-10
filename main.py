@@ -169,8 +169,10 @@ def open_camera():
         camera = cv2.VideoCapture(cam_index, cv2.V4L2)
     else : 
         camera = cv2.VideoCapture(cam_index)
+        
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+
     
 
 @app.route('/cam', methods=['POST', 'GET'])
