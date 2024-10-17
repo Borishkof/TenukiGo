@@ -9,11 +9,6 @@ import cv2
 import base64
 import recup_os
 
-import recup_os
-
-
-os = recup_os.get_os()
-
 cam_index = 0
 os=recup_os.get_os()
 
@@ -54,7 +49,7 @@ def processing_thread():
     """
         Process the detection algorithm
         
-        Update:j
+        Update:
             game_plot, sgf_text
         Send error to message if there is one
         """
@@ -174,7 +169,6 @@ def open_camera():
         camera = cv2.VideoCapture(cam_index, cv2.V4L2)
     else : 
         camera = cv2.VideoCapture(cam_index)
-        
     camera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
@@ -407,5 +401,4 @@ if __name__ == '__main__':
     # process_thread = threading.Thread(target=processing_thread, args=())
     # process_thread.start()
     app.run(debug=True)
-    
-# %%
+ 
