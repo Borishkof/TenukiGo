@@ -49,6 +49,8 @@ class GoGame:
         self.game = game
         self.current_player = None
         self.transparent_mode = transparent_mode
+        self.recent_moves_buffer= []
+        self.buffer_size = 5
     
     def set_transparent_mode(self, bool_):
         self.transparent_mode = bool_
@@ -162,48 +164,53 @@ class GoGame:
     def define_new_move(self):
         """
         Define a new move based on the difference between the current game state and the detected state.
-
-        This function compares the current state of the game with the detected state from the board detection module,
-        identifies the new black and white stone positions, and plays moves accordingly in the game.
-
-        Returns:
-            None
         """
-        # Get the detected state from the board detection module
         detected_state = np.transpose(self.board_detect.get_state(), (1, 0, 2))
-
-        # Get the current state of black and white stones in the game
         current_state = self.game.numpy(["black_stones", "white_stones"])
-
-        # Calculate the difference between the detected state and the current state
         difference = detected_state - current_state
 
-        # Identify the indices of newly added black and white stones
         black_stone_indices = np.argwhere(difference[:, :, 0] == 1)
         white_stone_indices = np.argwhere(difference[:, :, 1] == 1)
 
-        # Handle the case where more than one stone was added
+        # Check for more than one stone being added
         if len(black_stone_indices) + len(white_stone_indices) > 1:
-            print("[GoGame Log] - More than one stone was added!")
+            self.process_multiple_moves(black_stone_indices, white_stone_indices)
             return
 
-        # Play a move for a newly added black stone
-        if len(black_stone_indices) != 0:
-            self.play_move(black_stone_indices[0][0] + 1, black_stone_indices[0][1] + 1, 1)  # 1 is black_stone
+        # Check if the move is a repositioning
+        def is_repositioning(stone, color):
+            for recent_move in self.recent_moves_buffer:
+                if recent_move['color'] == color and np.array_equal(recent_move['position'], stone):
+                    return True
+            return False
+
+        # Process black stones
+        if len(black_stone_indices) != 0 and not is_repositioning(black_stone_indices[0], 'B'):
+            self.play_move(black_stone_indices[0][0] + 1, black_stone_indices[0][1] + 1, 1)
             self.moves.append(('B', (black_stone_indices[0][0], 18 - black_stone_indices[0][1])))
-            print(f"[GoGame Log] - Black stone was played at ({black_stone_indices[0][0], 18 - black_stone_indices[0][1]})")
-            return
+            self.recent_moves_buffer.append({'color': 'B', 'position': black_stone_indices[0]})
+            self.trim_buffer()
 
-        # Play a move for a newly added white stone
-        if len(white_stone_indices) != 0:
-            self.play_move(white_stone_indices[0][0] + 1, white_stone_indices[0][1] + 1, 2)  # 2 is white_stone
+        # Process white stones
+        if len(white_stone_indices) != 0 and not is_repositioning(white_stone_indices[0], 'W'):
+            self.play_move(white_stone_indices[0][0] + 1, white_stone_indices[0][1] + 1, 2)
             self.moves.append(('W', (white_stone_indices[0][0], 18 - white_stone_indices[0][1])))
-            print(f"[GoGame Log] - White stone was played at ({white_stone_indices[0][0], 18 - white_stone_indices[0][1]})")
-            return
+            self.recent_moves_buffer.append({'color': 'W', 'position': white_stone_indices[0]})
+            self.trim_buffer()
 
-        # Print a message if no moves were detected
-        print("No new move detected!")
+    def trim_buffer(self):
+        # Ensure buffer size stays within limit
+        if len(self.recent_moves_buffer) > self.buffer_size:
+            self.recent_moves_buffer.pop(0)
 
+    def process_multiple_moves(self, black_stones, white_stones):
+        for stone in black_stones:
+            self.play_move(stone[0] + 1, stone[1] + 1, 1)
+            self.moves.append(('B', (stone[0], 18 - stone[1])))
+
+        for stone in white_stones:
+            self.play_move(stone[0] + 1, stone[1] + 1, 2)
+            self.moves.append(('W', (stone[0], 18 - stone[1])))
     
     def auto_play_game_moves(self):
         """
