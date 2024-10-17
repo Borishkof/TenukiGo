@@ -335,3 +335,5 @@ class GoGame:
         return sente.sgf.dumps(self.game)
 
 
+
+# %%
