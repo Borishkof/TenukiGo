@@ -169,31 +169,38 @@ class GoGame:
         current_state = self.game.numpy(["black_stones", "white_stones"])
         difference = detected_state - current_state
 
-        black_stone_indices = np.argwhere(difference[:, :, 0] == 1)
+
+
+
+        # Identify the indices of newly added black and white stones
+        black_stone_indices = np.argwhere(difference[:, :, 0] == 1) #positions [x,y] où l'état présent et l'état passé du goban diffèrent pour noir
         white_stone_indices = np.argwhere(difference[:, :, 1] == 1)
+        black_stone_indices_disappeared = np.argwhere(difference[:, :, 0] == -1)
+        white_stone_indices_disappeared = np.argwhere(difference[:, :, 1] == -1)
 
         # Check for more than one stone being added
         if len(black_stone_indices) + len(white_stone_indices) > 1:
             self.process_multiple_moves(black_stone_indices, white_stone_indices)
             return
 
-        # Check if the move is a repositioning
-        def is_repositioning(stone, color):
-            for recent_move in self.recent_moves_buffer:
-                if recent_move['color'] == color and np.array_equal(recent_move['position'], stone):
-                    return True
-            return False
-
-        # Process black stones
-        if len(black_stone_indices) != 0 and not is_repositioning(black_stone_indices[0], 'B'):
-            self.play_move(black_stone_indices[0][0] + 1, black_stone_indices[0][1] + 1, 1)
+        # Play a move for a newly added black stone
+        if len(black_stone_indices) != 0:
+            if len(black_stone_indices)!=0 and len(black_stone_indices_disappeared)!=0: #if one stone has been moved, we adapt the sgf file
+                self.game.step_up()
+                print("A stone has been moved")
+            self.play_move(black_stone_indices[0][0] + 1, black_stone_indices[0][1] + 1, 1)  # 1 is black_stone
+            # black_stone_indices[0][0] + 1 : ligne du coup joué, black_stone_indices[0][1] + 1 : colonne du coup joué
+            # On ajoute 1 car il n'y a pas de "zéro-ième" ligne
             self.moves.append(('B', (black_stone_indices[0][0], 18 - black_stone_indices[0][1])))
             self.recent_moves_buffer.append({'color': 'B', 'position': black_stone_indices[0]})
             self.trim_buffer()
 
-        # Process white stones
-        if len(white_stone_indices) != 0 and not is_repositioning(white_stone_indices[0], 'W'):
-            self.play_move(white_stone_indices[0][0] + 1, white_stone_indices[0][1] + 1, 2)
+        # Play a move for a newly added white stone
+        if len(white_stone_indices) != 0:
+            if len(white_stone_indices)==1 and len(white_stone_indices_disappeared)==1:
+                self.game.step_up()
+                print("A stone has been moved")
+            self.play_move(white_stone_indices[0][0] + 1, white_stone_indices[0][1] + 1, 2)  # 2 is white_stone
             self.moves.append(('W', (white_stone_indices[0][0], 18 - white_stone_indices[0][1])))
             self.recent_moves_buffer.append({'color': 'W', 'position': white_stone_indices[0]})
             self.trim_buffer()
