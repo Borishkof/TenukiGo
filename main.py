@@ -8,6 +8,7 @@ from flask import Flask, render_template, Response, request
 import cv2
 import base64
 import time
+
 import recup_os
 
 cam_index = 0
