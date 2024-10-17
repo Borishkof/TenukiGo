@@ -119,10 +119,7 @@ class GoGame:
             return self.go_visual.current_position(), self.get_sgf()
     
     def transparent_mode_moves(self):
-        #MODIFIER CETTE FONCTION
-        x=self.board_detect.get_state()
-        print(x[0])
-        return np.transpose(x, (1, 0, 2))
+        return np.transpose(self.board_detect.get_state(), (1, 0, 2))
         
 
     def play_move(self, x, y, stone_color):
@@ -181,9 +178,14 @@ class GoGame:
         # Calculate the difference between the detected state and the current state
         difference = detected_state - current_state
 
+
+
+
         # Identify the indices of newly added black and white stones
-        black_stone_indices = np.argwhere(difference[:, :, 0] == 1)
+        black_stone_indices = np.argwhere(difference[:, :, 0] == 1) #positions [x,y] où l'état présent et l'état passé du goban diffèrent pour noir
         white_stone_indices = np.argwhere(difference[:, :, 1] == 1)
+        black_stone_indices_disappeared = np.argwhere(difference[:, :, 0] == -1)
+        white_stone_indices_disappeared = np.argwhere(difference[:, :, 1] == -1)
 
         # Handle the case where more than one stone was added
         if len(black_stone_indices) + len(white_stone_indices) > 1:
@@ -192,13 +194,21 @@ class GoGame:
 
         # Play a move for a newly added black stone
         if len(black_stone_indices) != 0:
+            if len(black_stone_indices)!=0 and len(black_stone_indices_disappeared)!=0: #if one stone has been moved, we adapt the sgf file
+                self.game.step_up()
+                print("A stone has been moved")
             self.play_move(black_stone_indices[0][0] + 1, black_stone_indices[0][1] + 1, 1)  # 1 is black_stone
+            # black_stone_indices[0][0] + 1 : ligne du coup joué, black_stone_indices[0][1] + 1 : colonne du coup joué
+            # On ajoute 1 car il n'y a pas de "zéro-ième" ligne
             self.moves.append(('B', (black_stone_indices[0][0], 18 - black_stone_indices[0][1])))
             print(f"[GoGame Log] - Black stone was played at ({black_stone_indices[0][0], 18 - black_stone_indices[0][1]})")
             return
 
         # Play a move for a newly added white stone
         if len(white_stone_indices) != 0:
+            if len(white_stone_indices)==1 and len(white_stone_indices_disappeared)==1:
+                self.game.step_up()
+                print("A stone has been moved")
             self.play_move(white_stone_indices[0][0] + 1, white_stone_indices[0][1] + 1, 2)  # 2 is white_stone
             self.moves.append(('W', (white_stone_indices[0][0], 18 - white_stone_indices[0][1])))
             print(f"[GoGame Log] - White stone was played at ({white_stone_indices[0][0], 18 - white_stone_indices[0][1]})")
