@@ -2,6 +2,7 @@
 from GoVisual import *
 from GoBoard import *
 import sente
+import threading
 
 
 
@@ -51,6 +52,7 @@ class GoGame:
         self.transparent_mode = transparent_mode
         self.recent_moves_buffer= []
         self.buffer_size = 5
+        self.numpy_board = []
     
     def set_transparent_mode(self, bool_):
         self.transparent_mode = bool_
@@ -82,7 +84,7 @@ class GoGame:
         
         if self.transparent_mode:
             detected_state = self.transparent_mode_moves()
-            return self.go_visual.draw_transparent(detected_state), self.get_sgf()
+            return self.go_visual.draw_transparent(detected_state), None
         
         else:
             # Populate the game based on the detected stones
@@ -116,12 +118,25 @@ class GoGame:
 
         if self.transparent_mode:
             detected_state = self.transparent_mode_moves()
-            return self.go_visual.draw_transparent(detected_state), self.get_sgf()
+            return self.go_visual.draw_transparent(detected_state), None
         else:
             self.define_new_move()        
             return self.go_visual.current_position(), self.get_sgf()
     
+
+    def copyBoardToNumpy(self):
+        final_board = np.zeros((19, 19), dtype=int)
+        # Assigner des valeurs pour les pierres noires et blanches
+        final_board[self.board_detect.get_state()[:, :, 0] == 1] = 1  # 1 pour les pierres noires
+        final_board[self.board_detect.get_state()[:, :, 1] == 1] = 2  # 2 pour les pierres blanches
+           
+        if (self.numpy_board == [] or np.any(final_board != self.numpy_board[-1])):
+            self.numpy_board.append(final_board)
+            print(final_board)
+
     def transparent_mode_moves(self):
+        copy_thread = threading.Thread(target=self.copyBoardToNumpy)
+        copy_thread.start()
         return np.transpose(self.board_detect.get_state(), (1, 0, 2))
         
     
@@ -169,9 +184,6 @@ class GoGame:
         detected_state = np.transpose(self.board_detect.get_state(), (1, 0, 2))
         current_state = self.game.numpy(["black_stones", "white_stones"])
         difference = detected_state - current_state
-
-
-
 
         # Identify the indices of newly added black and white stones
         black_stone_indices = np.argwhere(difference[:, :, 0] == 1) #positions [x,y] où l'état présent et l'état passé du goban diffèrent pour noir
