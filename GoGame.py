@@ -82,7 +82,8 @@ class GoGame:
         
         if self.transparent_mode:
             detected_state = self.transparent_mode_moves()
-            return self.go_visual.draw_transparent(detected_state), None
+            return self.go_visual.draw_transparent(detected_state), self.get_sgf()
+        
         else:
             # Populate the game based on the detected stones
             self.auto_play_game_moves()
@@ -115,7 +116,7 @@ class GoGame:
 
         if self.transparent_mode:
             detected_state = self.transparent_mode_moves()
-            return self.go_visual.draw_transparent(detected_state), None
+            return self.go_visual.draw_transparent(detected_state), self.get_sgf()
         else:
             self.define_new_move()        
             return self.go_visual.current_position(), self.get_sgf()
@@ -123,7 +124,7 @@ class GoGame:
     def transparent_mode_moves(self):
         return np.transpose(self.board_detect.get_state(), (1, 0, 2))
         
-
+    
     def play_move(self, x, y, stone_color):
         """
         Play a move in the game at the specified position.
