@@ -2,7 +2,6 @@
 from GoVisual import *
 from GoBoard import *
 import sente
-import threading
 
 
 
@@ -84,7 +83,7 @@ class GoGame:
         
         if self.transparent_mode:
             detected_state = self.transparent_mode_moves()
-            return self.go_visual.draw_transparent(detected_state), None
+            return self.go_visual.draw_transparent(detected_state), self.post_treatment()
         
         else:
             # Populate the game based on the detected stones
@@ -118,7 +117,7 @@ class GoGame:
 
         if self.transparent_mode:
             detected_state = self.transparent_mode_moves()
-            return self.go_visual.draw_transparent(detected_state), None
+            return self.go_visual.draw_transparent(detected_state), self.post_treatment()
         else:
             self.define_new_move()        
             return self.go_visual.current_position(), self.get_sgf()
@@ -135,10 +134,8 @@ class GoGame:
             print(final_board)
 
     def transparent_mode_moves(self):
-        copy_thread = threading.Thread(target=self.copyBoardToNumpy)
-        copy_thread.start()
+        self.copyBoardToNumpy()
         return np.transpose(self.board_detect.get_state(), (1, 0, 2))
-        
     
     def play_move(self, x, y, stone_color):
         """
@@ -345,6 +342,10 @@ class GoGame:
             str: The SGF representation of the game.
         """
         # Use the sente.sgf.dumps function to convert the game to SGF format
+        return sente.sgf.dumps(self.game)
+    
+    def post_treatment(self):
+        print(self.numpy_board)
         return sente.sgf.dumps(self.game)
 
 
