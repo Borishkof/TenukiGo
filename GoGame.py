@@ -49,6 +49,9 @@ class GoGame:
         self.game = game
         self.current_player = None
         self.transparent_mode = transparent_mode
+        self.recent_moves_buffer= []
+        self.buffer_size = 5
+        self.numpy_board = []
     
     def set_transparent_mode(self, bool_):
         self.transparent_mode = bool_
@@ -80,7 +83,8 @@ class GoGame:
         
         if self.transparent_mode:
             detected_state = self.transparent_mode_moves()
-            return self.go_visual.draw_transparent(detected_state), None
+            return self.go_visual.draw_transparent(detected_state), self.post_treatment()
+        
         else:
             # Populate the game based on the detected stones
             self.auto_play_game_moves()
@@ -113,15 +117,26 @@ class GoGame:
 
         if self.transparent_mode:
             detected_state = self.transparent_mode_moves()
-            return self.go_visual.draw_transparent(detected_state), None
+            return self.go_visual.draw_transparent(detected_state), self.post_treatment()
         else:
             self.define_new_move()        
             return self.go_visual.current_position(), self.get_sgf()
     
-    def transparent_mode_moves(self):
-        return np.transpose(self.board_detect.get_state(), (1, 0, 2))
-        
 
+    def copyBoardToNumpy(self):
+        final_board = np.zeros((19, 19), dtype=int)
+        # Assigner des valeurs pour les pierres noires et blanches
+        final_board[self.board_detect.get_state()[:, :, 0] == 1] = 1  # 1 pour les pierres noires
+        final_board[self.board_detect.get_state()[:, :, 1] == 1] = 2  # 2 pour les pierres blanches
+           
+        if (self.numpy_board == [] or np.any(final_board != self.numpy_board[-1])):
+            self.numpy_board.append(final_board)
+            print(final_board)
+
+    def transparent_mode_moves(self):
+        self.copyBoardToNumpy()
+        return np.transpose(self.board_detect.get_state(), (1, 0, 2))
+    
     def play_move(self, x, y, stone_color):
         """
         Play a move in the game at the specified position.
@@ -162,48 +177,57 @@ class GoGame:
     def define_new_move(self):
         """
         Define a new move based on the difference between the current game state and the detected state.
-
-        This function compares the current state of the game with the detected state from the board detection module,
-        identifies the new black and white stone positions, and plays moves accordingly in the game.
-
-        Returns:
-            None
         """
-        # Get the detected state from the board detection module
         detected_state = np.transpose(self.board_detect.get_state(), (1, 0, 2))
-
-        # Get the current state of black and white stones in the game
         current_state = self.game.numpy(["black_stones", "white_stones"])
-
-        # Calculate the difference between the detected state and the current state
         difference = detected_state - current_state
 
         # Identify the indices of newly added black and white stones
-        black_stone_indices = np.argwhere(difference[:, :, 0] == 1)
+        black_stone_indices = np.argwhere(difference[:, :, 0] == 1) #positions [x,y] où l'état présent et l'état passé du goban diffèrent pour noir
         white_stone_indices = np.argwhere(difference[:, :, 1] == 1)
+        black_stone_indices_disappeared = np.argwhere(difference[:, :, 0] == -1)
+        white_stone_indices_disappeared = np.argwhere(difference[:, :, 1] == -1)
 
-        # Handle the case where more than one stone was added
+        # Check for more than one stone being added
         if len(black_stone_indices) + len(white_stone_indices) > 1:
-            print("[GoGame Log] - More than one stone was added!")
+            self.process_multiple_moves(black_stone_indices, white_stone_indices)
             return
 
         # Play a move for a newly added black stone
         if len(black_stone_indices) != 0:
+            if len(black_stone_indices)!=0 and len(black_stone_indices_disappeared)!=0: #if one stone has been moved, we adapt the sgf file
+                self.game.step_up()
+                print("A stone has been moved")
             self.play_move(black_stone_indices[0][0] + 1, black_stone_indices[0][1] + 1, 1)  # 1 is black_stone
+            # black_stone_indices[0][0] + 1 : ligne du coup joué, black_stone_indices[0][1] + 1 : colonne du coup joué
+            # On ajoute 1 car il n'y a pas de "zéro-ième" ligne
             self.moves.append(('B', (black_stone_indices[0][0], 18 - black_stone_indices[0][1])))
-            print(f"[GoGame Log] - Black stone was played at ({black_stone_indices[0][0], 18 - black_stone_indices[0][1]})")
-            return
+            self.recent_moves_buffer.append({'color': 'B', 'position': black_stone_indices[0]})
+            self.trim_buffer()
 
         # Play a move for a newly added white stone
         if len(white_stone_indices) != 0:
+            if len(white_stone_indices)==1 and len(white_stone_indices_disappeared)==1:
+                self.game.step_up()
+                print("A stone has been moved")
             self.play_move(white_stone_indices[0][0] + 1, white_stone_indices[0][1] + 1, 2)  # 2 is white_stone
             self.moves.append(('W', (white_stone_indices[0][0], 18 - white_stone_indices[0][1])))
-            print(f"[GoGame Log] - White stone was played at ({white_stone_indices[0][0], 18 - white_stone_indices[0][1]})")
-            return
+            self.recent_moves_buffer.append({'color': 'W', 'position': white_stone_indices[0]})
+            self.trim_buffer()
 
-        # Print a message if no moves were detected
-        print("No new move detected!")
+    def trim_buffer(self):
+        # Ensure buffer size stays within limit
+        if len(self.recent_moves_buffer) > self.buffer_size:
+            self.recent_moves_buffer.pop(0)
 
+    def process_multiple_moves(self, black_stones, white_stones):
+        for stone in black_stones:
+            self.play_move(stone[0] + 1, stone[1] + 1, 1)
+            self.moves.append(('B', (stone[0], 18 - stone[1])))
+
+        for stone in white_stones:
+            self.play_move(stone[0] + 1, stone[1] + 1, 2)
+            self.moves.append(('W', (stone[0], 18 - stone[1])))
     
     def auto_play_game_moves(self):
         """
@@ -319,5 +343,11 @@ class GoGame:
         """
         # Use the sente.sgf.dumps function to convert the game to SGF format
         return sente.sgf.dumps(self.game)
+    
+    def post_treatment(self):
+        print(self.numpy_board)
+        return sente.sgf.dumps(self.game)
 
 
+
+# %%

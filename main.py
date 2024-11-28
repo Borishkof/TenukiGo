@@ -7,13 +7,22 @@ from GoVisual import *
 from flask import Flask, render_template, Response, request
 import cv2
 import base64
+import time
 
 import recup_os
 
+#cam_index = 0
+def find_camera_index():
+    index = 0
+    while True:
+        cap = cv2.VideoCapture(index)
+        if cap.read()[0]:
+            cap.release()
+            return index
+        cap.release()
+        index += 1
 
-os = recup_os.get_os()
-
-cam_index = 0
+cam_index = find_camera_index()
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = 'your_secret_key'  
@@ -52,7 +61,7 @@ def processing_thread():
     """
         Process the detection algorithm
         
-        Update:j
+        Update:
             game_plot, sgf_text
         Send error to message if there is one
         """
@@ -146,6 +155,7 @@ def generate_frames():
                 frame = buffer.tobytes()
                 yield (b'--frame\r\n'
                         b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+                time.sleep(0.05)
         except Exception:
             print('Exception: Camera not detected')
             break
@@ -166,12 +176,20 @@ def end_camera():
 def open_camera():
     """open the camera """
     global camera
+    os = recup_os.get_os()
     if os == "Windows" :
         camera = cv2.VideoCapture(cam_index, cv2.CAP_DSHOW)
     elif os == "Linux" :
         camera = cv2.VideoCapture(cam_index, cv2.V4L2)
     else : 
         camera = cv2.VideoCapture(cam_index)
+
+    try :
+        camera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+        camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    except :
+        pass
+    
 
 @app.route('/cam', methods=['POST', 'GET'])
 def getval():
@@ -400,5 +418,4 @@ if __name__ == '__main__':
     # process_thread = threading.Thread(target=processing_thread, args=())
     # process_thread.start()
     app.run(debug=True)
-    
-# %%
+ 
