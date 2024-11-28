@@ -51,6 +51,7 @@ class GoGame:
         self.transparent_mode = transparent_mode
         self.recent_moves_buffer= []
         self.buffer_size = 5
+        self.numpy_board = []
     
     def set_transparent_mode(self, bool_):
         self.transparent_mode = bool_
@@ -82,7 +83,8 @@ class GoGame:
         
         if self.transparent_mode:
             detected_state = self.transparent_mode_moves()
-            return self.go_visual.draw_transparent(detected_state), None
+            return self.go_visual.draw_transparent(detected_state), self.post_treatment()
+        
         else:
             # Populate the game based on the detected stones
             self.auto_play_game_moves()
@@ -115,15 +117,26 @@ class GoGame:
 
         if self.transparent_mode:
             detected_state = self.transparent_mode_moves()
-            return self.go_visual.draw_transparent(detected_state), None
+            return self.go_visual.draw_transparent(detected_state), self.post_treatment()
         else:
             self.define_new_move()        
             return self.go_visual.current_position(), self.get_sgf()
     
-    def transparent_mode_moves(self):
-        return np.transpose(self.board_detect.get_state(), (1, 0, 2))
-        
 
+    def copyBoardToNumpy(self):
+        final_board = np.zeros((19, 19), dtype=int)
+        # Assigner des valeurs pour les pierres noires et blanches
+        final_board[self.board_detect.get_state()[:, :, 0] == 1] = 1  # 1 pour les pierres noires
+        final_board[self.board_detect.get_state()[:, :, 1] == 1] = 2  # 2 pour les pierres blanches
+           
+        if (self.numpy_board == [] or np.any(final_board != self.numpy_board[-1])):
+            self.numpy_board.append(final_board)
+            print(final_board)
+
+    def transparent_mode_moves(self):
+        self.copyBoardToNumpy()
+        return np.transpose(self.board_detect.get_state(), (1, 0, 2))
+    
     def play_move(self, x, y, stone_color):
         """
         Play a move in the game at the specified position.
@@ -168,9 +181,6 @@ class GoGame:
         detected_state = np.transpose(self.board_detect.get_state(), (1, 0, 2))
         current_state = self.game.numpy(["black_stones", "white_stones"])
         difference = detected_state - current_state
-
-
-
 
         # Identify the indices of newly added black and white stones
         black_stone_indices = np.argwhere(difference[:, :, 0] == 1) #positions [x,y] où l'état présent et l'état passé du goban diffèrent pour noir
@@ -332,6 +342,10 @@ class GoGame:
             str: The SGF representation of the game.
         """
         # Use the sente.sgf.dumps function to convert the game to SGF format
+        return sente.sgf.dumps(self.game)
+    
+    def post_treatment(self):
+        print(self.numpy_board)
         return sente.sgf.dumps(self.game)
 
 

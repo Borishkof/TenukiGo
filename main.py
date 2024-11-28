@@ -11,7 +11,18 @@ import time
 
 import recup_os
 
-cam_index = 0
+#cam_index = 0
+def find_camera_index():
+    index = 0
+    while True:
+        cap = cv2.VideoCapture(index)
+        if cap.read()[0]:
+            cap.release()
+            return index
+        cap.release()
+        index += 1
+
+cam_index = find_camera_index()
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = 'your_secret_key'  
@@ -165,15 +176,19 @@ def end_camera():
 def open_camera():
     """open the camera """
     global camera
+    os = recup_os.get_os()
     if os == "Windows" :
         camera = cv2.VideoCapture(cam_index, cv2.CAP_DSHOW)
     elif os == "Linux" :
         camera = cv2.VideoCapture(cam_index, cv2.V4L2)
     else : 
         camera = cv2.VideoCapture(cam_index)
-    camera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-    camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
+    try :
+        camera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+        camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    except :
+        pass
     
 
 @app.route('/cam', methods=['POST', 'GET'])
