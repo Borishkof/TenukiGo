@@ -2,6 +2,7 @@ import sente
 from sente import sgf
 import numpy as np
 from tests_numpy_vers_sgf import *
+import itertools
 
 """
 On a une liste de tableaux numpy représentant les états de la partie. L'idée de base est de retrouver les cops en regaradnt les différneces
@@ -148,6 +149,32 @@ def get_last_index(L,e):
     return index
 
 
+def distance(liste_ajouts, liste_retraits):
+    return sum(abs(liste_ajouts[i][0]-liste_retraits[i][0])+abs(liste_ajouts[i][1]-liste_retraits[i][1]) for i in range(len(liste_ajouts)))
+
+def opt_permutation(liste_ajouts,liste_retraits):
+    d_opt=np.inf
+    liste_ajouts_permut_opt=liste_ajouts
+    for liste_ajouts_permut in list(itertools.permutations(liste_ajouts)):
+       if distance(liste_ajouts_permut,liste_retraits)<d_opt:
+           liste_ajouts_permut_opt=liste_ajouts_permut
+           d_opt=distance(liste_ajouts_permut,liste_retraits)
+    return liste_ajouts_permut_opt
+    
+
+"""
+def voisinage(x_ajout,y_ajout,liste_pierres_retirees):
+    x_opt=liste_pierres_retirees[0]
+    y_opt=liste_pierres_retirees[0]
+    e=np.inf
+    for (x,y) in liste_pierres_retirees:
+        if abs(x-x_ajout)+abs(y-y_ajout)<e:
+            e=abs(x-x_ajout)+abs(y-y_ajout)
+            x_opt=x
+            y_opt=y
+    return (x,y)
+"""
+
 
 def correcteur1(liste_tableaux):
     liste_coups=[]
@@ -167,7 +194,8 @@ def correcteur1(liste_tableaux):
         
         if nb_ajouts!=0: # s'il il y a des pierres ajoutées, on les cherche pour les mettre dans la liste des coups
             
-            # On vérifie que le nombre de pierres ajoutées est cohérent du point de vue du fait que les joueurs jouent à tour de rôle  
+            # On vérifie que le nombre de pierres ajoutées est cohérent du point de vue du fait que les joueurs jouent à tour de rôle 
+            # CAS N°1
             if len(D[turn]["ajout"])-len(D[notturn]["ajout"])==1: 
                 liste_coups.append(D[turn]["ajout"][0])
                 for k in range(len(D[notturn]["ajout"])):
@@ -184,11 +212,12 @@ def correcteur1(liste_tableaux):
      
             else:
                 #On traite le cas où une seule pierre a été déplacée en modifiant la liste des coups
+                # CAS N°3
 
+                """
                 if len(D[turn]["ajout"])==len(D[turn]["retire"]) and len(D[turn]["ajout"])==1:
                     (x,y,c)=D[turn]["retire"][0]
                     index=get_last_index(liste_coups,(x,y,c))
-                    print("index",index, "\n\n\n")
                     if index!=-1:
                         liste_coups[index]=D[turn]["ajout"][0]
                 
@@ -197,7 +226,34 @@ def correcteur1(liste_tableaux):
                     index=get_last_index(liste_coups,(x,y,c))
                     if index!=-1:
                         liste_coups[index]=D[notturn]["ajout"][0]
-        
+                """
+                #Cas du déplacement de plusieurs pierres
+                if len(D[turn]["ajout"])==len(D[turn]["retire"]):
+                    liste_retraits=D[turn]["retire"]
+                    liste_ajouts=D[turn]["ajout"]
+
+                    liste_ajout_opt_permut=opt_permutation(liste_ajouts,liste_retraits) #Identification du déplacement de pierres le plus probable
+
+                    for i in range(len(liste_ajout_opt_permut)):
+                        (x,y,c)=liste_retraits[i]
+                        index=get_last_index(liste_coups,(x,y,c))
+                        if index!=-1:
+                            liste_coups[index]=liste_ajout_opt_permut[i]
+
+                if len(D[notturn]["ajout"])==len(D[notturn]["retire"]):
+                    liste_retraits=D[notturn]["retire"]
+                    liste_ajouts=D[notturn]["ajout"]
+                    print("LISTES :  ",liste_retraits,liste_ajouts)
+                    liste_ajout_opt_permut=opt_permutation(liste_ajouts,liste_retraits) #Identification du déplacement de pierres le plus probable
+
+                    for i in range(len(liste_ajout_opt_permut)):
+                        (x,y,c)=liste_retraits[i]
+                        index=get_last_index(liste_coups,(x,y,c))
+                        if index!=-1:
+                            liste_coups[index]=liste_ajout_opt_permut[i]
+                
+            
+          
     return liste_coups
 
 #fichier=open("TenukiGo2/TenukiGo/Go-Game-Streaming-WebApp-main/partie_vs_organos _8k_.sgf", "r")
@@ -240,7 +296,12 @@ print("\n\n")
 
 
 
-# On modifie le premier coup de blanc (simulation de déplacement de pierre)
+"""
+Test sur le déplacement d'une pierre (on modifie le premier coup de blanc)
+La liste des coups retient la dernière position de la pierre déplacée  : (15,4)
+OK
+"""
+
 liste_tableaux=sgf_to_numpy("/home/luc/Documents/imt_atlantique/commande_entreprise/projet_go/TenukiGo2/TenukiGo/Go-Game-Streaming-WebApp-main/partie_vs_organos _8k_.sgf")
 
 tab=np.copy(liste_tableaux[2])
@@ -257,7 +318,44 @@ print(liste_coups)
 print("\n\n")
 
 
+"""
+Test sur le déplacement d'une pierre (on modifie le premier coup de blanc)
+La liste des coups retient la dernière position de la pierre déplacée  : (15,4)
+OK
+"""
 
+liste_tableaux=sgf_to_numpy("/home/luc/Documents/imt_atlantique/commande_entreprise/projet_go/TenukiGo2/TenukiGo/Go-Game-Streaming-WebApp-main/partie_vs_organos _8k_.sgf")
+
+tab=np.copy(liste_tableaux[7])
+
+tab[3,16]=0
+tab[3,18]=1
+
+tab[15,3]=0
+tab[15,4]=2
+
+tab[15,15]=0
+tab[15,16]=1
+
+tab[2,14]=0
+tab[1,13]=1
+
+liste_tableaux=np.insert(liste_tableaux,8,tab,0)
+
+print("\n")
+print(liste_tableaux[7])
+print("\n")
+print(liste_tableaux[8])
+print("\n")
+print(liste_tableaux[9])
+print("\n")
+print(liste_tableaux[10])
+
+
+
+liste_coups=correcteur1(liste_tableaux)
+print(liste_coups)
+print("\n\n")
     
 
 
