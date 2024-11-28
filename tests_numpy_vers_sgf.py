@@ -46,7 +46,7 @@ def sgf_to_numpy(fic_sgf):
                     result[i,ligne,colonne]=2
     return result
 
-result=sgf_to_numpy("/home/luc/Documents/imt_atlantique/commande_entreprise/projet_go/TenukiGo2/TenukiGo/Go-Game-Streaming-WebApp-main/partie_vs_organos _8k_.sgf")
+result=sgf_to_numpy("partie_vs_organos_8k_.sgf")
 #print(result[4])
 
 def liste_coups_to_sgf(liste):
@@ -68,7 +68,7 @@ fichier.close()
 
 """
 
-game = sgf.load("/home/luc/Documents/imt_atlantique/commande_entreprise/projet_go/TenukiGo2/TenukiGo/sgf_test_fonction_liste_coups_to_sgf.sgf", ignore_illegal_properties=True)
+game = sgf.load("sgf_test_fonction_liste_coups_to_sgf.sgf", ignore_illegal_properties=True)
 game.play_default_sequence()
 print(game.get_board())
 game.play_default_sequence()

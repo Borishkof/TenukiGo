@@ -2,6 +2,8 @@
 from GoVisual import *
 from GoBoard import *
 import sente
+from numpy_vers_liste_coups import *
+from tests_numpy_vers_sgf import *
 
 
 
@@ -346,7 +348,8 @@ class GoGame:
     
     def post_treatment(self):
         print(self.numpy_board)
-        return sente.sgf.dumps(self.game)
+        liste_coups = correcteur1(self.numpy_board)
+        return liste_coups_to_sgf(liste_coups)
 
 
 

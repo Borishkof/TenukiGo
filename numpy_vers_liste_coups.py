@@ -258,7 +258,7 @@ def correcteur1(liste_tableaux):
 
 #fichier=open("TenukiGo2/TenukiGo/Go-Game-Streaming-WebApp-main/partie_vs_organos _8k_.sgf", "r")
 
-liste_tableaux=sgf_to_numpy("/home/luc/Documents/imt_atlantique/commande_entreprise/projet_go/TenukiGo2/TenukiGo/Go-Game-Streaming-WebApp-main/partie_vs_organos _8k_.sgf")
+liste_tableaux=sgf_to_numpy("partie_vs_organos_8k_.sgf")
 
 """
 
@@ -302,7 +302,7 @@ La liste des coups retient la dernière position de la pierre déplacée  : (15,
 OK
 """
 
-liste_tableaux=sgf_to_numpy("/home/luc/Documents/imt_atlantique/commande_entreprise/projet_go/TenukiGo2/TenukiGo/Go-Game-Streaming-WebApp-main/partie_vs_organos _8k_.sgf")
+liste_tableaux=sgf_to_numpy("partie_vs_organos_8k_.sgf")
 
 tab=np.copy(liste_tableaux[2])
 tab[15,3]=0
@@ -324,7 +324,7 @@ La liste des coups retient la dernière position de la pierre déplacée  : (15,
 OK
 """
 
-liste_tableaux=sgf_to_numpy("/home/luc/Documents/imt_atlantique/commande_entreprise/projet_go/TenukiGo2/TenukiGo/Go-Game-Streaming-WebApp-main/partie_vs_organos _8k_.sgf")
+liste_tableaux=sgf_to_numpy("partie_vs_organos_8k_.sgf")
 
 tab=np.copy(liste_tableaux[7])
 
