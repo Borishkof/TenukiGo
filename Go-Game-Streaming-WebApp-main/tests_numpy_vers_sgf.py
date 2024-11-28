@@ -40,14 +40,14 @@ def sgf_to_numpy(fic_sgf):
         tab_coups_blanc=game.numpy(["white_stones"])
         for ligne in range(19):
             for colonne in range(19):
-                if tab_coups_noir[ligne][colonne][0]==1:
+                if tab_coups_noir[colonne][ligne][0]==1:
                     result[i,ligne,colonne]=1
-                if tab_coups_blanc[ligne][colonne][0]==1:
+                if tab_coups_blanc[colonne][ligne][0]==1:
                     result[i,ligne,colonne]=2
     return result
 
 result=sgf_to_numpy("/home/luc/Documents/imt_atlantique/commande_entreprise/projet_go/TenukiGo2/TenukiGo/Go-Game-Streaming-WebApp-main/partie_vs_organos _8k_.sgf")
-print(result[4])
+#print(result[4])
 
 def liste_coups_to_sgf(liste):
     #liste[i] contient la position du coup i sous la forme d'un tuple (ligne_coup,colonne_coup,n°pierre) ou n°pierre=1 si c'est noir qui joue et 2
@@ -60,11 +60,13 @@ def liste_coups_to_sgf(liste):
 
 liste=[(17,4,1),(17,16,2),(4,4,1),(4,16,2)]
 
-sgf=liste_coups_to_sgf(liste)
+sgfres=liste_coups_to_sgf(liste)
 
 fichier=open("sgf_test_fonction_liste_coups_to_sgf.sgf", "w")
-fichier.write(sgf)
+fichier.write(sgfres)
 fichier.close()
+
+"""
 
 game = sgf.load("/home/luc/Documents/imt_atlantique/commande_entreprise/projet_go/TenukiGo2/TenukiGo/sgf_test_fonction_liste_coups_to_sgf.sgf", ignore_illegal_properties=True)
 game.play_default_sequence()
@@ -76,3 +78,4 @@ print(game.get_board())
 game.play_default_sequence()
 print(game.get_board())
 
+"""
