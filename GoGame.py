@@ -43,6 +43,18 @@ class GoGame:
 
         current_player : None
             Placeholder for the current player in the game.
+        
+        transparent_mode : bool
+            Boolean flag to enable or disable transparent mode.
+        
+        recent_moves_buffer : list
+            List to store the recent moves for game mode.
+        
+        buffer_size : int
+            Maximum size of the recent moves buffer.
+        
+        numpy_board : list
+            List to store the numpy representation of the board at each move for post-treatment.
 
         """
         self.moves = []
@@ -71,7 +83,10 @@ class GoGame:
             current_player (str): The current player to set, either "BLACK" or "WHITE".
 
         Returns:
-            Tuple: A tuple containing the current position on the board and the SGF representation of the game.
+            For game mode:
+                Tuple: A tuple containing the current position on the board and the SGF representation of the game.
+            For transparent mode:
+                Tuple: A tuple containing the transparent mode representation of the board and the post-treatment SGF.
         """
         # Reset moves and set the current player
         self.moves = []
@@ -109,7 +124,10 @@ class GoGame:
             frame: The frame to be processed.
 
         Returns:
-            Tuple: A tuple containing the current position on the board and the SGF representation of the game.
+            For game mode:
+                Tuple: A tuple containing the current position on the board and the SGF representation of the game.
+            For transparent mode:
+                Tuple: A tuple containing the transparent mode representation of the board and the post-treatment SGF.
         """
         # Set the current frame for the instance
         self.frame = frame
@@ -126,16 +144,30 @@ class GoGame:
     
 
     def copyBoardToNumpy(self):
+        """
+        Copy the board state to a numpy array for post-treatment and stock it in
+        the numpy_board attribute.
+        Black stones are represented by 1, white stones by 2, and empty positions by 0.
+
+        Returns:
+            None
+        """
         final_board = np.zeros((19, 19), dtype=int)
-        # Assigner des valeurs pour les pierres noires et blanches
-        final_board[self.board_detect.get_state()[:, :, 0] == 1] = 1  # 1 pour les pierres noires
-        final_board[self.board_detect.get_state()[:, :, 1] == 1] = 2  # 2 pour les pierres blanches
+        final_board[self.board_detect.get_state()[:, :, 0] == 1] = 1  # 1 for black stones
+        final_board[self.board_detect.get_state()[:, :, 1] == 1] = 2  # 2 for white stones
            
         if (self.numpy_board == [] or np.any(final_board != self.numpy_board[-1])):
             self.numpy_board.append(final_board)
-            print(final_board)
 
     def transparent_mode_moves(self):
+        """
+        This function retrieves the current state of the board in transparent mode and
+        copies it for pos-treatment.
+
+        Returns:
+            np.array: The current state of the board in transparent mode.
+        """
+
         self.copyBoardToNumpy()
         return np.transpose(self.board_detect.get_state(), (1, 0, 2))
     
@@ -347,7 +379,13 @@ class GoGame:
         return sente.sgf.dumps(self.game)
     
     def post_treatment(self):
-        print(self.numpy_board)
+        """
+        Post-treatment of the game to correct the sequence of moves.
+        Use both AI and algorithms to correct the detection errors.
+
+        Returns:
+            str: The SGF representation of the corrected game.
+        """
         liste_coups = correcteur1(self.numpy_board)
         return liste_coups_to_sgf(liste_coups)
 
