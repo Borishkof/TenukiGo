@@ -46,8 +46,7 @@ def sgf_to_numpy(fic_sgf):
                     result[i,ligne,colonne]=2
     return result
 
-result=sgf_to_numpy("partie_vs_organos_8k_.sgf")
-#print(result[4])
+
 
 def liste_coups_to_sgf(liste):
     #liste[i] contient la position du coup i sous la forme d'un tuple (ligne_coup,colonne_coup,n°pierre) ou n°pierre=1 si c'est noir qui joue et 2
@@ -57,25 +56,3 @@ def liste_coups_to_sgf(liste):
         game.play(liste[i][0],liste[i][1])
     return sgf.dumps(game)
 
-
-liste=[(17,4,1),(17,16,2),(4,4,1),(4,16,2)]
-
-sgfres=liste_coups_to_sgf(liste)
-
-fichier=open("sgf_test_fonction_liste_coups_to_sgf.sgf", "w")
-fichier.write(sgfres)
-fichier.close()
-
-"""
-
-game = sgf.load("sgf_test_fonction_liste_coups_to_sgf.sgf", ignore_illegal_properties=True)
-game.play_default_sequence()
-print(game.get_board())
-game.play_default_sequence()
-print(game.get_board())
-game.play_default_sequence()
-print(game.get_board())
-game.play_default_sequence()
-print(game.get_board())
-
-"""

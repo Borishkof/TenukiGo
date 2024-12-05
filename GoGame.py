@@ -2,8 +2,14 @@
 from GoVisual import *
 from GoBoard import *
 import sente
-from numpy_vers_liste_coups import *
-from tests_numpy_vers_sgf import *
+
+import sys
+sys.path.append("Post_treatment_Algo/Code")
+from corrector_noAI import *
+from sgf_to_numpy import *
+
+sys.path.append("Post_treatment_AI/Code")
+from Fill_gaps_model import *
 
 
 
