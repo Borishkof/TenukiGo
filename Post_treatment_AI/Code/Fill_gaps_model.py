@@ -103,5 +103,3 @@ def fill_gaps(model, sequence_with_gap, gap_start, gap_end, black_possible_moves
         print(f"Filling gap index {gap_index} with move {best_move} by player {current_player}")
 
     return filled_sequence
-
-
