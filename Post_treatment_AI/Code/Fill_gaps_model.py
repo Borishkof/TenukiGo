@@ -26,7 +26,7 @@ def fill_gaps(model, sequence_with_gap, gap_start, gap_end, black_possible_moves
     state_before_gap_1 = sequence_with_gap[gap_start - 1]
     state_before_gap_2 = sequence_with_gap[gap_start - 2]
     difference = state_before_gap_1 - state_before_gap_2
-    current_player = 2 if np.any(difference == 1) else 2  # 1 for black, 2 for white
+    current_player = 2 if np.any(difference == 1) else 2  
     
     black_moves = black_possible_moves.copy()
     white_moves = white_possible_moves.copy()
@@ -57,10 +57,6 @@ def fill_gaps(model, sequence_with_gap, gap_start, gap_end, black_possible_moves
             candidate_boards.append(candidate_board)
             candidate_moves.append(move)  # Keep track of the valid move
 
-        # If no valid candidate boards, continue (no valid move)
-        if not candidate_boards:
-            print(f"No valid moves for gap index {gap_index}, skipping.")
-            continue
 
         # Convert candidate_boards to a numpy array
         candidate_boards = np.array(candidate_boards)
@@ -87,9 +83,6 @@ def fill_gaps(model, sequence_with_gap, gap_start, gap_end, black_possible_moves
         else:
             white_moves.remove(best_move)
 
-        # Update the next board state in the sequence
-        if gap_index + 1 < len(filled_sequence):
-            filled_sequence[gap_index + 1] = filled_sequence[gap_index].copy()
 
         # Switch player for the next move (alternate between 1 and 2)
         current_player = 3 - current_player  # If 1 (black), becomes 2 (white), and vice versa
