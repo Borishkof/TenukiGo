@@ -4,9 +4,6 @@ from keras.models import load_model
 
 #Load the model
 model=load_model('modelCNN.keras')
-#Define the possible moves
-import numpy as np
-
 
 def fill_gaps(model, sequence_with_gap, gap_start, gap_end, black_possible_moves, white_possible_moves):
     """
@@ -23,17 +20,14 @@ def fill_gaps(model, sequence_with_gap, gap_start, gap_end, black_possible_moves
     Returns:
         filled_sequence (list of np.array): The sequence with the gaps filled.
     """
-    filled_sequence = sequence_with_gap.copy()  # Avoid modifying the original sequence
+    filled_sequence = sequence_with_gap.copy()  
 
     # Determine the current player based on the difference between the last two states before the gap
     state_before_gap_1 = sequence_with_gap[gap_start - 1]
     state_before_gap_2 = sequence_with_gap[gap_start - 2]
-
-    # Subtract the two states to find the last move
     difference = state_before_gap_1 - state_before_gap_2
     current_player = 2 if np.any(difference == 1) else 2  # 1 for black, 2 for white
-
-    # Copy possible moves to avoid mutating the original lists
+    
     black_moves = black_possible_moves.copy()
     white_moves = white_possible_moves.copy()
 
