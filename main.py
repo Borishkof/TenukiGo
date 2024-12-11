@@ -71,7 +71,7 @@ def processing_thread():
     if not ProcessFrame is None:
         try:
             if not initialized:
-                game_plot = go_game.initialize_game(ProcessFrame)
+                game_plot, sgf_text = go_game.initialize_game(ProcessFrame)
                 initialized = True
                 message = usual_message
             else:    
