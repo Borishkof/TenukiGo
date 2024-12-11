@@ -1,9 +1,17 @@
 #Imports
 import numpy as np
 from keras.models import load_model
+import os
+
+# Get the absolute path of the current script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Construct the absolute path to the model file
+model_path = os.path.join(script_dir, "modelCNN.keras")
+
 
 #Load the model
-model=load_model('modelCNN.keras')
+model=load_model(model_path)
 
 def fill_gaps(model, sequence_with_gap, gap_start, gap_end, black_possible_moves, white_possible_moves):
     """
