@@ -45,6 +45,7 @@ game_plot = empty_board
 process_thread = None
 go_game = None
 transparent_mode = False
+endGame = False
 
 
 def New_game(transparent_mode=False):
@@ -71,11 +72,11 @@ def processing_thread():
     if not ProcessFrame is None:
         try:
             if not initialized:
-                game_plot, sgf_text = go_game.initialize_game(ProcessFrame)
+                game_plot, sgf_text = go_game.initialize_game(ProcessFrame, endGame)
                 initialized = True
                 message = usual_message
             else:    
-                game_plot, sgf_text = go_game.main_loop(ProcessFrame)
+                game_plot, sgf_text = go_game.main_loop(ProcessFrame, endGame)
                 message = usual_message
         except Exception as e:
             message = "Erreur : "+str(e)
@@ -322,6 +323,9 @@ def get_sgf_txt():
     """
         Route which returns the sgf text to be uploaded
         """
+    global endGame
+    endGame = True
+    processing_thread()
     global sgf_text
     return sgf_text
 

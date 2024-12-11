@@ -53,6 +53,6 @@ def liste_coups_to_sgf(liste):
     # si c'est blanc qui joue
     game=sente.Game()
     for i in range(len(liste)):
-        game.play(liste[i][0],liste[i][1])
+        game.play(liste[i][0]+1,liste[i][1]+1)
     return sgf.dumps(game)
 
