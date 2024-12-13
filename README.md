@@ -143,7 +143,7 @@ cd GoGame-Detection
 
 If you are working with **TenukiGo** repository:
 
-1. Clone the **GoGame-Detection** repository:
+1. Clone the **TenukiGo** repository:
 ```sh
 git clone https://github.com/Borishkof/TenukiGo.git
 ```
