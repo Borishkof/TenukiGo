@@ -105,7 +105,7 @@
                     var blob = new Blob([xhr.responseText], { type: 'text/plain' });
                     
                     // Utiliser FileSaver.js pour télécharger le fichier
-                    saveAs(blob, 'nom_du_fichier.sgf');
+                    saveAs(blob, 'partie.sgf');
                 }
             };
             xhr.send();

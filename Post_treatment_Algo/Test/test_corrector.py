@@ -13,7 +13,7 @@ Test sur un plateau sans erreurs : OK
 
 """
 
-liste_coups=correcteur1(liste_tableaux)
+liste_coups=correctorNoAI(liste_tableaux)
 print(liste_coups)
 print("\n\n")
 
@@ -24,7 +24,7 @@ Test en supprimant une frame (erreur liée à un coup rapide) : OK
 """
 
 liste_tableaux=np.delete(liste_tableaux,2,0)
-liste_coups=correcteur1(liste_tableaux)
+liste_coups=correctorNoAI(liste_tableaux)
 print(liste_coups)
 print("\n\n")
 
@@ -37,7 +37,7 @@ L'ordre des coups perdu remis au hasard, on a une inversion des premiers coups
 
 liste_tableaux=np.delete(liste_tableaux,2,0)
 
-liste_coups=correcteur1(liste_tableaux)
+liste_coups=correctorNoAI(liste_tableaux)
 print(liste_coups)
 print("\n\n")
 
@@ -60,7 +60,7 @@ liste_tableaux=np.insert(liste_tableaux,3,tab,0)
 print(liste_tableaux[2])
 print(liste_tableaux[3])
 
-liste_coups=correcteur1(liste_tableaux)
+liste_coups=correctorNoAI(liste_tableaux)
 print(liste_coups)
 print("\n\n")
 
@@ -100,7 +100,7 @@ print(liste_tableaux[10])
 
 
 
-liste_coups=correcteur1(liste_tableaux)
+liste_coups=correctorNoAI(liste_tableaux)
 print(liste_coups)
 print("\n\n")
 
@@ -109,15 +109,15 @@ print("\n\n")
 
 liste=[(17,4,1),(17,16,2),(4,4,1),(4,16,2)]
 
-sgfres=liste_coups_to_sgf(liste)
+sgfres=to-sgf(liste)
 
-fichier=open("sgf_test_fonction_liste_coups_to_sgf.sgf", "w")
+fichier=open("sgf_test_fonction_to-sgf.sgf", "w")
 fichier.write(sgfres)
 fichier.close()
 
 """
 
-game = sgf.load("sgf_test_fonction_liste_coups_to_sgf.sgf", ignore_illegal_properties=True)
+game = sgf.load("sgf_test_fonction_to-sgf.sgf", ignore_illegal_properties=True)
 game.play_default_sequence()
 print(game.get_board())
 game.play_default_sequence()

@@ -10,18 +10,6 @@ Dernière étape : reconstituer le sgf à partir des tableaux numpy et de sente
 
 """
 
-
-#Dernière étape
-"""
-game = sgf.load("Go-Game-Streaming-WebApp/partie_test2.sgf", ignore_illegal_properties=True)
-tab_coups=game.numpy(["black_stones", "white_stones"])
-tab_coups_noir=game.numpy(["black_stones"])
-tab_coups_blanc=game.numpy(["white_stones"])
-board=game.get_board()
-
-print(np.shape(tab_coups_noir))
-"""
-
 tab_coups=np.zeros((19,19,1))
 
 def sgf_to_numpy(fic_sgf):
@@ -48,11 +36,11 @@ def sgf_to_numpy(fic_sgf):
 
 
 
-def liste_coups_to_sgf(liste):
+def to_sgf(liste):
     #liste[i] contient la position du coup i sous la forme d'un tuple (ligne_coup,colonne_coup,n°pierre) ou n°pierre=1 si c'est noir qui joue et 2
     # si c'est blanc qui joue
     game=sente.Game()
     for i in range(len(liste)):
-        game.play(liste[i][0],liste[i][1])
+        game.play(liste[i][0]+1,liste[i][1]+1)
     return sgf.dumps(game)
 

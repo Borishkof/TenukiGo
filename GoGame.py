@@ -5,8 +5,9 @@ import sente
 
 import sys
 sys.path.append("Post_treatment_Algo/Code")
-from corrector_noAI import *
-from sgf_to_numpy import *
+from corrector_noAI import correctorNoAI
+from corrector_withAI import correctorAI
+from sgf_to_numpy import to_sgf
 
 sys.path.append("Post_treatment_AI/Code")
 from Fill_gaps_model import *
@@ -77,7 +78,7 @@ class GoGame:
         self.transparent_mode = bool_
 
 
-    def initialize_game(self, frame, current_player="BLACK"):
+    def initialize_game(self, frame, current_player="BLACK", endGame=False):
         """
         Initialize the game state based on the provided frame and current player.
 
@@ -87,6 +88,7 @@ class GoGame:
         Args:
             frame: The frame to initialize the game.
             current_player (str): The current player to set, either "BLACK" or "WHITE".
+            endGame (bool): A boolean flag to determine if the game is ending.
 
         Returns:
             For game mode:
@@ -106,7 +108,7 @@ class GoGame:
         
         if self.transparent_mode:
             detected_state = self.transparent_mode_moves()
-            return self.go_visual.draw_transparent(detected_state), self.post_treatment()
+            return self.go_visual.draw_transparent(detected_state), self.post_treatment(endGame)
         
         else:
             # Populate the game based on the detected stones
@@ -119,7 +121,7 @@ class GoGame:
             return self.go_visual.current_position(), self.get_sgf()
     
     
-    def main_loop(self, frame):
+    def main_loop(self, frame, endGame=False):
         """
         Main loop for processing frames and updating the game state.
 
@@ -128,6 +130,7 @@ class GoGame:
 
         Args:
             frame: The frame to be processed.
+            endGame (bool): A boolean flag to determine if the game is ending.
 
         Returns:
             For game mode:
@@ -143,7 +146,7 @@ class GoGame:
 
         if self.transparent_mode:
             detected_state = self.transparent_mode_moves()
-            return self.go_visual.draw_transparent(detected_state), self.post_treatment()
+            return self.go_visual.draw_transparent(detected_state), self.post_treatment(endGame)
         else:
             self.define_new_move()        
             return self.go_visual.current_position(), self.get_sgf()
@@ -384,16 +387,17 @@ class GoGame:
         # Use the sente.sgf.dumps function to convert the game to SGF format
         return sente.sgf.dumps(self.game)
     
-    def post_treatment(self):
+    def post_treatment(self, endGame):
         """
         Post-treatment of the game to correct the sequence of moves.
-        Use both AI and algorithms to correct the detection errors.
+        Use AI and/or algorithms to correct the detection errors.
 
         Returns:
             str: The SGF representation of the corrected game.
         """
-        liste_coups = correcteur1(self.numpy_board)
-        return liste_coups_to_sgf(liste_coups)
+        if endGame:
+            liste_coups = correctorAI(self.numpy_board)
+            return to_sgf(liste_coups)
 
 
 
