@@ -2,6 +2,9 @@
 import numpy as np
 from keras.models import load_model
 import os
+import numpy as np
+import sgf
+
 
 # Get the absolute path of the current script
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -12,6 +15,126 @@ model_path = os.path.join(script_dir, "modelCNN.keras")
 
 #Load the model
 model=load_model(model_path)
+
+#UTILS
+def sgf_coords_to_indices(coord, board_size):
+    """Convert SGF coordinates (e.g., 'pd') to array indices."""
+    col, row = ord(coord[0]) - ord('a'), ord(coord[1]) - ord('a')
+    return board_size - row - 1, col
+def sgf_to_sequence(sgf_file, board_size=19):
+    """
+    Convert an SGF file to a sequence of Go board states.
+    
+    Args:
+        sgf_file (str): Path to the SGF file.
+        board_size (int): Size of the Go board.
+    
+    Returns:
+        sequence (list of np.array): Sequence of board states.
+    """
+    with open(sgf_file, 'r') as f:
+        sgf_content = f.read()    
+    collection = sgf.parse(sgf_content)
+    game = collection[0]  # Assume a single game
+    board = np.zeros((board_size, board_size), dtype=int)
+    sequence = [board.copy()]
+    
+    for node in game.rest:
+        move = node.properties
+        if 'B' in move:  # Black move
+            x, y = sgf_coords_to_indices(move['B'][0], board_size)
+            board[x, y] = 1
+        elif 'W' in move:  # White move
+            x, y = sgf_coords_to_indices(move['W'][0], board_size)
+            board[x, y] = 2
+        sequence.append(board.copy())
+    
+    return sequence
+
+def sequence_to_sgf(sequence, board_size=19):
+    """
+    Convert a sequence of Go board states back to SGF format.
+    
+    Args:
+        sequence (list of np.array): Sequence of board states.
+        board_size (int): Size of the Go board.
+    
+    Returns:
+        sgf_string (str): SGF representation of the game.
+    """
+    sgf_moves = []
+    prev_board = np.zeros_like(sequence[0])
+    
+    for board in sequence[1:]:
+        diff = board - prev_board
+        move = np.where(diff > 0)
+        if len(move[0]) > 0:  # There is a move
+            x, y = move[0][0], move[1][0]
+            color = 'B' if board[x, y] == 1 else 'W'
+            sgf_moves.append(f";{color}[{indices_to_sgf_coords(x, y, board_size)}]")
+        prev_board = board
+    
+    sgf_string = f"(;GM[1]SZ[{board_size}]" + "".join(sgf_moves) + ")"
+    return sgf_string
+
+def indices_to_sgf_coords(x, y, board_size):
+    """Convert array indices to SGF coordinates."""
+    return f"{chr(y + ord('a'))}{chr(board_size - x - 1 + ord('a'))}"
+
+def save_sgf_to_file(sgf_string, file_path):
+    """
+    Save an SGF string to a file.
+    
+    Args:
+        sgf_string (str): SGF content to save.
+        file_path (str): Path to save the SGF file.
+    """
+    with open(file_path, 'w') as f:
+        f.write(sgf_string)
+    print(f"SGF saved to {file_path}")
+def delete_states(sequence, start, end):
+    """
+    Replace states with zeros to create gaps.
+    
+    Args:
+        sequence (list of np.array): Original sequence of Go board states.
+        start (int): Starting index of the gap.
+        end (int): Ending index of the gap (exclusive).
+    
+    Returns:
+        modified_sequence (list of np.array): Sequence with states replaced by zeros.
+    """
+    board_shape = sequence[0].shape
+    for i in range(start, end):
+        sequence[i] = np.zeros(board_shape, dtype=int)
+    return sequence
+
+def get_possible_moves(initial_state, final_state):
+    """
+    Get possible moves in a gap by subtracting the final state from the initial state.
+    
+    Args:
+        initial_state (np.array): The initial board state.
+        final_state (np.array): The final board state.
+    Returns:
+        black_moves (list of tuple): List of moves made by black.
+        white_moves (list of tuple): List of moves made by white.
+    """
+    # Calculate the difference between states
+    difference = final_state - initial_state
+    
+    # Find all black moves (difference == 1)
+    black_moves = np.argwhere(difference == 1)
+    black_moves = [tuple(move) for move in black_moves]
+    
+    # Find all white moves (difference == 2)
+    white_moves = np.argwhere(difference == 2)
+    white_moves = [tuple(move) for move in white_moves]
+    
+    return black_moves, white_moves
+
+
+#FILL GAPS FUNCTION
 
 def fill_gaps(model, sequence_with_gap, gap_start, gap_end, black_possible_moves, white_possible_moves):
     """
@@ -28,14 +151,17 @@ def fill_gaps(model, sequence_with_gap, gap_start, gap_end, black_possible_moves
     Returns:
         filled_sequence (list of np.array): The sequence with the gaps filled.
     """
-    filled_sequence = sequence_with_gap.copy()  
+    filled_sequence = sequence_with_gap.copy()  # Avoid modifying the original sequence
 
     # Determine the current player based on the difference between the last two states before the gap
     state_before_gap_1 = sequence_with_gap[gap_start - 1]
     state_before_gap_2 = sequence_with_gap[gap_start - 2]
+
+    # Subtract the two states to find the last move
     difference = state_before_gap_1 - state_before_gap_2
-    current_player = 2 if np.any(difference == 1) else 2  
-    
+    current_player = 2 if np.any(difference == 1) else 2  # 1 for black, 2 for white
+
+    # Copy possible moves to avoid mutating the original lists
     black_moves = black_possible_moves.copy()
     white_moves = white_possible_moves.copy()
 
@@ -65,6 +191,10 @@ def fill_gaps(model, sequence_with_gap, gap_start, gap_end, black_possible_moves
             candidate_boards.append(candidate_board)
             candidate_moves.append(move)  # Keep track of the valid move
 
+        # If no valid candidate boards, continue (no valid move)
+        if not candidate_boards:
+            print(f"No valid moves for gap index {gap_index}, skipping.")
+            continue
 
         # Convert candidate_boards to a numpy array
         candidate_boards = np.array(candidate_boards)
@@ -90,8 +220,7 @@ def fill_gaps(model, sequence_with_gap, gap_start, gap_end, black_possible_moves
             black_moves.remove(best_move)
         else:
             white_moves.remove(best_move)
-
-
+            
         # Switch player for the next move (alternate between 1 and 2)
         current_player = 3 - current_player  # If 1 (black), becomes 2 (white), and vice versa
 
