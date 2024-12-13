@@ -5,9 +5,9 @@ import sente
 
 import sys
 sys.path.append("Post_treatment_Algo/Code")
-from corrector_noAI import *
-from corrector_withAI import *
-from sgf_to_numpy import *
+from corrector_noAI import correctorNoAI
+from corrector_withAI import correctorAI
+from sgf_to_numpy import to_sgf
 
 sys.path.append("Post_treatment_AI/Code")
 from Fill_gaps_model import *
@@ -390,14 +390,14 @@ class GoGame:
     def post_treatment(self, endGame):
         """
         Post-treatment of the game to correct the sequence of moves.
-        Use both AI and algorithms to correct the detection errors.
+        Use AI and/or algorithms to correct the detection errors.
 
         Returns:
             str: The SGF representation of the corrected game.
         """
         if endGame:
-            liste_coups = correcteur2(self.numpy_board)
-            return liste_coups_to_sgf(liste_coups)
+            liste_coups = correctorAI(self.numpy_board)
+            return to_sgf(liste_coups)
 
 
 

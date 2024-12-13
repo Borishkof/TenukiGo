@@ -106,6 +106,9 @@ On utilise l'IA pour reconstituer is on peut, sinon on ajoute les coups au hasar
 """
 
 def differences(tab1,tab2):
+    """
+        Reourne les listes des pierres ajoutées et retirées entre 2 états du plateau
+    """
     pierres_noires_ajoutées=[]
     pierres_noires_retirées=[]
     pierres_blanches_ajoutées=[]
@@ -176,7 +179,7 @@ def voisinage(x_ajout,y_ajout,liste_pierres_retirees):
 """
 
 
-def correcteur1(liste_tableaux):
+def correctorNoAI(liste_tableaux):
     liste_coups=[]
     #liste[i] contient la position du coup i sous la forme d'un tuple (ligne_coup,colonne_coup,n°pierre) ou n°pierre=1 si c'est noir qui joue et 2
     # si c'est blanc qui joue
@@ -255,8 +258,6 @@ def correcteur1(liste_tableaux):
             
           
     return liste_coups
-
-#fichier=open("TenukiGo2/TenukiGo/Go-Game-Streaming-WebApp-main/partie_vs_organos _8k_.sgf", "r")
 
     
 
