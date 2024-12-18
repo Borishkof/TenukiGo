@@ -45,14 +45,12 @@ def correctorAI(liste_tableaux):
                 index+=1
                 continue
             else:
-                print("liste_tab_avant=",liste_tableaux)
                 liste_tableaux.insert(index,liste_tableaux[index].copy())
                 b,w = get_possible_moves(liste_tableaux[index-1],liste_tableaux[index+1])
                 liste_tableaux=fill_gaps(model,liste_tableaux,index,index+2,b, w)
                 Nb_frames = len(liste_tableaux)
                 if Nb_frames-1 == index:
                     break
-                print("liste_tableaux_apres=",liste_tableaux)
           
     return liste_coups
 
