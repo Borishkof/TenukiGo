@@ -138,4 +138,4 @@ def fill_photo(img1,img2):
     sequence_with_gap = [array1] + [np.zeros((19, 19), dtype=int) for _ in range(gap_size)] + [array2]
     
     filled_sequence = fill_gaps_photo(model_IA ,sequence_with_gap, 1, gap_size+1, possible_moves_black, possible_moves_white)
-    return sgf_to_sequence( filled_sequence)
+    return sequence_to_sgf( filled_sequence)

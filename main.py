@@ -4,11 +4,12 @@ from ultralytics import YOLO
 from GoGame import *
 from GoBoard import *
 from GoVisual import *
-from flask import Flask, render_template, Response, request, flash,redirect, url_for
+from flask import Flask, render_template, Response, request, flash,redirect, send_file, url_for
 import cv2
 import base64
 import time
 import os
+from GoPhoto import *
 
 import recup_os
 
@@ -422,7 +423,6 @@ UPLOAD_FOLDER = 'uploads'
 
 def delete_uploaded_files():
     """Supprime tous les fichiers du dossier UPLOAD_FOLDER."""
-    print("on commence à delete")
     try:
         # Lister tous les fichiers dans le dossier
         files = os.listdir(UPLOAD_FOLDER)
@@ -436,10 +436,7 @@ def delete_uploaded_files():
         print(f"Erreur lors de la suppression des fichiers : {e}")
 
 @app.route('/uploadImg', methods=['POST'])
-def upload_files():
-
-    print("On entre dans la logique")
-    
+def upload_files():    
 
     if 'images' not in request.files:
         flash('Aucun fichier sélectionné')
@@ -459,22 +456,31 @@ def upload_files():
         uploaded_files.append(file_path)
 
     # Appelez votre fonction Python avec la liste des fichiers téléversés
-    process_uploaded_files(uploaded_files)
+    sgf = process_uploaded_files(uploaded_files)
 
     flash(f'{len(uploaded_files)} fichier(s) téléversé(s) avec succès.')
-    return redirect(url_for('modePhoto'))  # Redirige vers la page d’accueil ou une autre page
+
+    return redirect(url_for('modePhoto'))
+
+global sgf_text_photo
 
 def process_uploaded_files(file_paths):
     """
     Fonction pour traiter les fichiers téléversés.
     - file_paths : Liste des chemins des fichiers enregistrés.
     """
-    print(file_paths)
-    for file_path in file_paths:
-        print(f"Traitement du fichier : {file_path}")
-        # Ajoutez votre logique ici : analyse, conversion, etc.
-    
+    global sgf_text_photo
+    sgf_text_photo = fill_photo(file_paths[0],file_paths[1])
     delete_uploaded_files()
+
+
+@app.route('/get_sgf_photo')
+def get_sgf_photo():
+    """
+        Route which returns the sgf text to be uploaded
+        """
+    global sgf_text_photo
+    return sgf_text_photo
 
 @app.route('/sgf')
 def sgf():

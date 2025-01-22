@@ -19,14 +19,14 @@
             <form method="POST" action="/uploadImg" enctype="multipart/form-data">
                 <input type="file" name="images" multiple>
                 <br>
-                <button class="btn" type="submit">Téléverser</button>
+                <h2>Générer le fichier SGF de la partie</h2>
+                <button class="btn" type="submit">Générer le SGF</button>
             </form>
         </div>
 
-        <div class="download-section">
-            <h2>Générer le fichier SGF de la partie</h2>
-            <button class="btn" onclick="downloadFile()">Télécharger le SGF</button>
-        </div>
+        <h2>Télécharger le sgf de la partie</h2>
+        <button class="btn" onclick="downloadFile()">Télécharger le SGF</button>
+
     </main>
 
     <footer>
@@ -35,11 +35,15 @@
 
     <script>
         function downloadFile() {
+            // Requête AJAX pour obtenir le contenu du fichier depuis le serveur
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', '/get_sgf_txt', true);
+            xhr.open('GET', '/get_sgf_photo', true);
             xhr.onreadystatechange = function () {
                 if (xhr.readyState == 4 && xhr.status == 200) {
+                    // Créer un blob avec le contenu du fichier
                     var blob = new Blob([xhr.responseText], { type: 'text/plain' });
+                    
+                    // Utiliser FileSaver.js pour télécharger le fichier
                     saveAs(blob, 'partie.sgf');
                 }
             };
